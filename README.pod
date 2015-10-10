@@ -1,0 +1,16 @@
+=encoding utf8
+
+=head1 Potato
+
+=head2 What is Potato?
+
+Potato is an extensible MVC framework. It is very much a work in progress and not production ready.
+
+Feel free to fork L<https://github.com/potato-perl/potato.git> on your github account and check it out.
+See :L<https://help.github.com/articles/syncing-a-fork/>.
+
+=cut
+
+=head2 Help!
+
+We're usually on #potato on irc.perl.org, come in for a chat or just to abuse us. Happy hacking, pull requests welcome!
