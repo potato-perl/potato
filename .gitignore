@@ -1,0 +1,11 @@
+MANIFEST
+*.swp
+inc
+*.bak
+META*
+MYMETA.*
+Makefile
+*.tar.gz
+blib
+pm_to_blib
+local
