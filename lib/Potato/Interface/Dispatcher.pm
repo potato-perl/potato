@@ -1,6 +1,6 @@
 package Potato::Interface::Dispatcher;
 use Moose::Role;
 
-require 'dispatch';
+requires 'dispatch';
 
 1;
