@@ -1,4 +1,5 @@
-package DispatchTest;
+use utf8;
+package App::DispatchTest;
 use Moose;
 
 use Potato

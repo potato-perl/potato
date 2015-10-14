@@ -1,3 +1,4 @@
+use utf8;
 package PotatoX::Dispatcher::Test;
 use Moose::Role;
 

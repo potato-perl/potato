@@ -1,6 +1,18 @@
+use utf8;
 package Potato::Action;
 use Moose;
 
-#this represents a controller action, and will be used by the dispatcher to call methods
+has subname => (
+    is  => 'ro',
+    isa => 'Str',
+);
+has attrs => (
+    is  => 'ro',
+    isa => 'ArrayRef',
+);
+has classname => (
+    is  => 'ro',
+    isa => 'Str',
+);
 
 __PACKAGE__->meta->make_immutable;
