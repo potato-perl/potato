@@ -1,24 +1,30 @@
+use utf8;
 package Potato;
 use Moose;
 use Moose::Util ();
 
+use Import::Into;
+use Module::Pluggable::Object;
+
+#the idea here is there's no class methods, unlike catalyst
+#if you want to call something, you'll have to call new
+
 our $VERSION = '0.001000';
 $VERSION = eval $VERSION;
 
-#is this the way to do this? probably not as it goes mental
-#needs more thought
 sub import {
     my $target = caller;
     my $class = shift;
-    my %args = @_;
 
+    #only run this for things the use Potato
+    return if $class ne __PACKAGE__;
+
+    my %args = @_;
     die "no dispatcher" if !$args{dispatcher};
 
-    #first set $target to be us, minus the import method
-    push @$target::ISA, $class;
-    $target->meta->remove_method('import');
-
-    my $dispatcher = $args{dispatcher};
+    #set $target to be us
+    my @isas = $target->meta->superclasses;
+    $target->meta->superclasses( @isas, $class );
 
     #XXX do magic to find dispatcher class,
     # Dispatcher        => Potato::Dispatcher
@@ -29,35 +35,41 @@ sub import {
     #is a Dispatcher a role that we apply to us? i say yes
     # check $dispatcher does Potato::Interface::Dispatcher
 
+# what about response, is that something that should be plugable?
+# it probably is, sometimes we want to print, other times we want to write?
+# or is that the view?
+
+# but the view makes the data that we hand to the response, so i think response should
+# be another pluggable thing
+
+    my $dispatcher = $args{dispatcher};
     Moose::Util::apply_all_roles( $target, $dispatcher );
+
+    strict->import::into( $target );
+    warnings->import::into( $target );
 }
 
-#the idea here is there's no class methods, unlike catalyst
-#if you want to call something, you'll have to call new
-sub BUILD {
-    my $self = shift;
+has controllers => (
+    is      => 'ro',
+    isa     => 'ArrayRef',
+    builder => 'setup_controllers',
+);
+sub setup_controllers {
+    my ( $self ) = @_;
 
-    my ( @controllers, @models, @views );
-    #XXX find all the controllers|models|views
-    #loop each $thing
-    # check each $thing matches a potato::interface::$thing
-    # $thing->new( app => $self ) #all things can have app
+    my $class = ref $self;
 
-    # what about response, is that something that should be plugable?
-    # it probably is, sometimes we want to print, other times we want to write?
-    # or is that the view?
+    my @controller_classes = Module::Pluggable::Object->new(
+        search_path => [ "${class}::Controller" ],
+        require     => 1,
+    )->plugins;
 
-    # but the view makes the data that we hand to the response, so i think response should
-    # be another pluggable thing
+    my @controllers;
+    foreach my $controller_class ( @controller_classes ) {
+        push @controllers, $controller_class->new( app => $self );
+    }
 
-    $self->register_actions;
+    \@controllers;
 }
-
-sub register_actions {
-    #build all the actions from the controller methods
-}
-sub model {}
-sub controller {}
-sub view {}
 
 __PACKAGE__->meta->make_immutable;
