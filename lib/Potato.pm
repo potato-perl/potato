@@ -2,9 +2,9 @@ use utf8;
 package Potato;
 use Moose;
 use Moose::Util ();
+use Potato::Utensils;
 
 use Import::Into;
-use Module::Pluggable::Object;
 
 #the idea here is there's no class methods, unlike catalyst
 #if you want to call something, you'll have to call new
@@ -49,6 +49,15 @@ sub import {
     warnings->import::into( $target );
 }
 
+sub BUILD {
+    my $self = shift;
+
+    $self->setup_finalised;
+}
+
+#hook for things to wrap
+sub setup_finalised {}
+
 has controllers => (
     is      => 'ro',
     isa     => 'ArrayRef',
@@ -59,13 +68,10 @@ sub setup_controllers {
 
     my $class = ref $self;
 
-    my @controller_classes = Module::Pluggable::Object->new(
-        search_path => [ "${class}::Controller" ],
-        require     => 1,
-    )->plugins;
+    my $controller_classes = Potato::Utensils::find_packages( "${class}::Controller" );
 
     my @controllers;
-    foreach my $controller_class ( @controller_classes ) {
+    foreach my $controller_class ( @$controller_classes ) {
         push @controllers, $controller_class->new( app => $self );
     }
 
