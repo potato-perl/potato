@@ -1,6 +1,24 @@
 use utf8;
 package Potato::Action;
 use Moose;
+use Type::Tiny;
+use Types::Standard qw/ArrayRef HashRef/;
+
+my $attrs_type = HashRef->plus_coercions(
+	ArrayRef,
+	sub {
+		my $raw_attrs = $_;
+	    my $attrs = {};
+
+	    foreach my $attr (@{$raw_attrs} ) {
+	        if ( my ( $key, $value ) = ( $attr =~ /^(.*?)(?:\(\s*(.*?)\s*\))?$/ ) ){
+	            push @{$attrs->{$key}}, $value;
+	        }
+	    }
+
+	    return $attrs;
+    }
+);
 
 has subname => (
     is  => 'ro',
@@ -9,7 +27,8 @@ has subname => (
 
 has attrs => (
     is  => 'ro',
-    writer => '_attrs',
+    isa => $attrs_type,
+    coerce => 1
 );
 
 has classname => (
@@ -17,22 +36,18 @@ has classname => (
     isa => 'Str',
 );
 
-sub BUILD {
-    my ($self, $args) = @_;
-	$self->_attrs( $self->_parse_attrs($args->{attrs}) );
-}
 
 sub _parse_attrs {
-	my ( $self, $raw_attrs ) = @_;
-	my $attrs = {};
+    my ( $self, $raw_attrs ) = @_;
+    my $attrs = {};
 
-	foreach my $attr (@{$raw_attrs} ) {
-		if ( my ( $key, $value ) = ( $attr =~ /^(.*?)(?:\(\s*(.*?)\s*\))?$/ ) ){
-			push @{$attrs->{$key}}, $value;
-		}
-	}
+    foreach my $attr (@{$raw_attrs} ) {
+        if ( my ( $key, $value ) = ( $attr =~ /^(.*?)(?:\(\s*(.*?)\s*\))?$/ ) ){
+            push @{$attrs->{$key}}, $value;
+        }
+    }
 
-	return $attrs;
+    return $attrs;
 }
 
 __PACKAGE__->meta->make_immutable;
