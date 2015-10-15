@@ -5,18 +5,18 @@ use Type::Tiny;
 use Types::Standard qw/ArrayRef HashRef/;
 
 my $attrs_type = HashRef->plus_coercions(
-	ArrayRef,
-	sub {
-		my $raw_attrs = $_;
-	    my $attrs = {};
+    ArrayRef,
+    sub {
+        my $raw_attrs = $_;
+        my $attrs = {};
 
-	    foreach my $attr (@{$raw_attrs} ) {
-	        if ( my ( $key, $value ) = ( $attr =~ /^(.*?)(?:\(\s*(.*?)\s*\))?$/ ) ){
-	            push @{$attrs->{$key}}, $value;
-	        }
-	    }
+        foreach my $attr (@{$raw_attrs} ) {
+            if ( my ( $key, $value ) = ( $attr =~ /^(.*?)(?:\(\s*(.*?)\s*\))?$/ ) ){
+                push @{$attrs->{$key}}, $value;
+            }
+        }
 
-	    return $attrs;
+        return $attrs;
     }
 );
 
@@ -35,19 +35,5 @@ has classname => (
     is  => 'ro',
     isa => 'Str',
 );
-
-
-sub _parse_attrs {
-    my ( $self, $raw_attrs ) = @_;
-    my $attrs = {};
-
-    foreach my $attr (@{$raw_attrs} ) {
-        if ( my ( $key, $value ) = ( $attr =~ /^(.*?)(?:\(\s*(.*?)\s*\))?$/ ) ){
-            push @{$attrs->{$key}}, $value;
-        }
-    }
-
-    return $attrs;
-}
 
 __PACKAGE__->meta->make_immutable;
