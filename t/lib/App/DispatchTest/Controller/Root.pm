@@ -10,7 +10,7 @@ sub middle : PathPart(elddim) CaptureArgs(2) {
     my ( $self, $arg1, $arg2 ) = @_;
 }
 
-sub end : Args(0) {
+sub end : Args(0) SomeAttr(0) SomeAttr(1) SomeAttr(2) {
     my ( $self ) = @_;
 }
 
