@@ -1,0 +1,17 @@
+{
+    "test": "some test config",
+
+    "test_override": "Some NOT overridden config",
+    
+    "Model::TestModel": {
+        "model_test": "Some model test config",
+    },
+
+    "View::TestView": {
+        "view_test": "Some view test config",
+    },
+
+    "Controller::Root": {
+        "controller_test": "Some controller test config",
+    }
+}

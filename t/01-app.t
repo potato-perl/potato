@@ -27,14 +27,14 @@ is scalar @{$app->controllers->{'Root'}->actions}, 3, '3 actions';
 
 #Models
 {
-	my $models = $app->models;
-	is scalar(keys %{$models}), 1, "One model defined.";
-	ok defined($models->{'TestModel'}), "TestModel is defined.";
+    my $models = $app->models;
+    is scalar(keys %{$models}), 1, "One model defined.";
+    ok defined($models->{'TestModel'}), "TestModel is defined.";
 }
 
 #Views
 {
-	my $views = $app->views;
-	is scalar(keys %{$views}), 1, "One view defined.";
-	ok defined($views->{'TestView'}), "TestView is defined.";	
+    my $views = $app->views;
+    is scalar(keys %{$views}), 1, "One view defined.";
+    ok defined($views->{'TestView'}), "TestView is defined.";    
 }

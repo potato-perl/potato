@@ -8,6 +8,12 @@ has app => (
     weak_ref => 1,
 );
 
+has config => (
+    is             => 'ro',
+    weak_ref    => 1,
+    isa         => 'HashRef'
+);
+
 sub import {
     my $target = caller;
     my $class = shift;

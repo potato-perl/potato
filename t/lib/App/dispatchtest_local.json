@@ -1,0 +1,7 @@
+{
+    "test": "some test config",
+    
+    "test_local": "Some local config",
+
+    "test_override": "Some overidden config"
+}
