@@ -40,9 +40,6 @@ sub import {
 
     push @$target::ISA, $class;
 
-    strict->import::into( $target );
-    warnings->import::into( $target );
-    attributes->import::into( $target, () );
     Moose->import::into( $target );
     MooseX::MethodAttributes->import::into( $target );
 
