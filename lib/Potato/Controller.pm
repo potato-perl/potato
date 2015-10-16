@@ -17,19 +17,16 @@ has actions => (
 );
 sub setup_actions {
     my $self = shift;
-    my $classname = ref $self;
 
     my @actions;
 
     my @methods = $self->meta->get_method_with_attributes_list;
     for ( @methods ) {
-        my $attrs = $self->meta->get_method( $_->name )->attributes;
-
-        #should we store the meta method as well? ( $_ )???
+        #should we store the meta method instead? ( $_ )???
         my $action = Potato::Action->new(
             subname   => $_->name,
-            attrs     => $attrs,
-            classname => $classname,
+            attrs     => $_->attributes,
+            classname => $_->package_name,
         );
         push @actions, $action;
     }

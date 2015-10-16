@@ -1,7 +1,6 @@
 use utf8;
 package Potato::Action;
 use Moose;
-use Type::Tiny;
 use Types::Standard qw/ArrayRef HashRef/;
 
 my $attrs_type = HashRef->plus_coercions(
