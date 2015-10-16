@@ -60,22 +60,51 @@ sub setup_finalised {}
 
 has controllers => (
     is      => 'ro',
-    isa     => 'ArrayRef',
+    isa     => 'HashRef',
     builder => 'setup_controllers',
 );
+
+has models => (
+    is  => 'ro',
+    isa => 'HashRef',
+    builder => 'setup_models'
+);
+
+has views => (
+    is  => 'ro',
+    isa => 'HashRef',
+    builder => 'setup_views'
+);
+
 sub setup_controllers {
     my ( $self ) = @_;
+    $self->_setup_components("Controller");
+}
 
-    my $class = ref $self;
+sub setup_models {
+    my ( $self ) = @_;
+    $self->_setup_components("Model");
+}
 
-    my $controller_classes = Potato::Utensils::find_packages( "${class}::Controller" );
+sub setup_views {
+    my ( $self ) = @_;
+    $self->_setup_components("View");
+}
 
-    my @controllers;
-    foreach my $controller_class ( @$controller_classes ) {
-        push @controllers, $controller_class->new( app => $self );
+sub _setup_components {
+    my ( $self, $type ) = @_;
+    my $namespace = ref($self) . "::${type}";
+
+    my $classes = Potato::Utensils::find_packages( $namespace );
+
+    my $components = {};
+    foreach my $class ( @$classes ) {
+        if( $class =~ m/${namespace}::(.*)$/ ) {
+            $components->{$1} = $class->new( app => $self );
+        }
     }
 
-    \@controllers;
+    $components;
 }
 
 __PACKAGE__->meta->make_immutable;
