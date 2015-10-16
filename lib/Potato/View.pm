@@ -7,6 +7,12 @@ has app => (
     weak_ref => 1,
 );
 
+has config => (
+    is             => 'ro',
+    weak_ref    => 1,
+    isa         => 'HashRef'
+);
+
 sub import {
     my $target = caller;
     my $class = shift;
@@ -20,7 +26,7 @@ sub import {
 }
 
 sub process {
-	die "You need to specify a view to use.";
+    die "You need to specify a view to use.";
 }
 
 __PACKAGE__->meta->make_immutable;

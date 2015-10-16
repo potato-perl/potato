@@ -15,6 +15,13 @@ has actions => (
     isa     => 'ArrayRef',
     builder => 'setup_actions',
 );
+
+has config => (
+    is          => 'ro',
+    weak_ref    => 1,
+    isa         => 'HashRef'
+);
+
 sub setup_actions {
     my $self = shift;
 

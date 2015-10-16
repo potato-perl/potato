@@ -4,7 +4,10 @@ use Moose;
 use Moose::Util ();
 use Potato::Utensils;
 
+use Config::ZOMG;
 use Import::Into;
+use Path::Tiny ();
+use FindBin ();
 
 #the idea here is there's no class methods, unlike catalyst
 #if you want to call something, you'll have to call new
@@ -58,22 +61,75 @@ sub BUILD {
 #hook for things to wrap
 sub setup_finalised {}
 
+has home_path => (
+    is      => 'ro',
+    isa     => 'Path::Tiny',
+    builder => 'setup_home_path'
+);
+
+sub setup_home_path {
+    my $self = shift;
+    my $class_name = ref $self;
+    
+    #Allow override of home path
+    if ( $ENV{'HOME_PATH'} ) {
+        return Path::Tiny::path( $ENV{'HOME_PATH'} );
+    }
+
+    (my $file = "${class_name}.pm") =~ s{::}{/}g;
+
+    if ( my $inc_entry = $INC{$file} ) {
+        my $path = Path::Tiny::path( $inc_entry )->parent;
+        while ( ! $path->is_rootdir ) {
+            $path = $path->parent;
+            if ( 
+                $path->child('cpanfile')->exists || 
+                $path->child('Makefile.PL')->exists
+            ) {
+                return $path;
+            }
+        }
+        
+        #This is a bit horrible, no clone on Path::Tiny?
+        return Path::Tiny::path( $inc_entry )->parent;
+    }
+
+    die "Unable to find home directory";
+}
+
+has config => (
+    is      => 'ro',
+    isa     => 'HashRef',
+    builder => 'setup_config',
+    lazy    => 1,
+);
+
+sub setup_config {
+    my $self = shift;
+
+    my $name = (split /::/, ref $self)[-1];
+    Config::ZOMG->new( name => $name, path => $self->home_path )->load;
+}
+
 has controllers => (
     is      => 'ro',
     isa     => 'HashRef',
     builder => 'setup_controllers',
+    lazy    => 1,
 );
 
 has models => (
-    is  => 'ro',
-    isa => 'HashRef',
-    builder => 'setup_models'
+    is      => 'ro',
+    isa     => 'HashRef',
+    builder => 'setup_models',
+    lazy    => 1,
 );
 
 has views => (
-    is  => 'ro',
-    isa => 'HashRef',
-    builder => 'setup_views'
+    is      => 'ro',
+    isa     => 'HashRef',
+    builder => 'setup_views',
+    lazy    => 1,
 );
 
 sub setup_controllers {
@@ -100,11 +156,19 @@ sub _setup_components {
     my $components = {};
     foreach my $class ( @$classes ) {
         if( $class =~ m/${namespace}::(.*)$/ ) {
-            $components->{$1} = $class->new( app => $self );
+            $components->{$1} = $class->new( 
+                app     => $self,
+                config  => $self->config->{"${type}::$1"} || {}
+            );
         }
     }
 
     $components;
 }
+
+#Quick access helpers
+sub model { $_[0]->models->{$_[1]}; }
+sub controller { $_[0]->controllers->{$_[1]}; }
+sub view { $_[0]->views->{$_[1]}; }
 
 __PACKAGE__->meta->make_immutable;
