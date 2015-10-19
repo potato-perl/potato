@@ -19,20 +19,44 @@ my $attrs_type = HashRef->plus_coercions(
     }
 );
 
-has subname => (
+has name => (
     is  => 'ro',
     isa => 'Str',
 );
 
 has attrs => (
-    is  => 'ro',
-    isa => $attrs_type,
-    coerce => 1
+    is     => 'ro',
+    isa    => $attrs_type,
+    coerce => 1,
 );
 
-has classname => (
+has controller => (
     is  => 'ro',
     isa => 'Str',
 );
+
+has method => (
+    is => 'ro',
+);
+
+has reverse_path => (
+    is => 'ro',
+    isa => 'Str',
+    builder => 'build_reverse_path',
+    lazy => 1,
+);
+sub build_reverse_path {
+    my $self = shift;
+
+    my $controller = $self->controller;
+    $controller =~ s/::/\\/g;
+    lc $controller . '/' . $self->name;
+}
+
+sub execute {
+    my ( $self, @args ) = @_;
+
+    $self->method->( $self->controller, @args );
+}
 
 __PACKAGE__->meta->make_immutable;

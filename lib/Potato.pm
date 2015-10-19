@@ -3,11 +3,12 @@ package Potato;
 use Moose;
 use Moose::Util ();
 use Potato::Utensils;
+use Potato::Dispatcher;
 
 use Config::ZOMG;
 use Import::Into;
 use Path::Tiny ();
-use FindBin ();
+use List::Util ();
 
 #the idea here is there's no class methods, unlike catalyst
 #if you want to call something, you'll have to call new
@@ -23,7 +24,7 @@ sub import {
     return if $class ne __PACKAGE__;
 
     my %args = @_;
-    die "no dispatcher" if !$args{dispatcher};
+#    die "no dispatcher" if !$args{dispatcher};
 
     #set $target to be us
     my @isas = $target->meta->superclasses;
@@ -45,32 +46,25 @@ sub import {
 # but the view makes the data that we hand to the response, so i think response should
 # be another pluggable thing
 
-    my $dispatcher = $args{dispatcher};
-    Moose::Util::apply_all_roles( $target, $dispatcher );
+#XXX change this to frontend
+#    my $dispatcher = $args{dispatcher};
+#    Moose::Util::apply_all_roles( $target, $dispatcher );
 
     strict->import::into( $target );
     warnings->import::into( $target );
 }
 
-sub BUILD {
-    my $self = shift;
-
-    $self->setup_finalised;
-}
-
-#hook for things to wrap
-sub setup_finalised {}
-
 has home_path => (
     is      => 'ro',
     isa     => 'Path::Tiny',
-    builder => 'setup_home_path'
+    builder => 'setup_home_path',
+    lazy    => 1, #inited by config
 );
 
 sub setup_home_path {
     my $self = shift;
     my $class_name = ref $self;
-    
+
     #Allow override of home path
     if ( $ENV{'HOME_PATH'} ) {
         return Path::Tiny::path( $ENV{'HOME_PATH'} );
@@ -82,14 +76,14 @@ sub setup_home_path {
         my $path = Path::Tiny::path( $inc_entry )->parent;
         while ( ! $path->is_rootdir ) {
             $path = $path->parent;
-            if ( 
-                $path->child('cpanfile')->exists || 
-                $path->child('Makefile.PL')->exists
+            if (
+                $path->child('cpanfile')->exists
+                || $path->child('Makefile.PL')->exists
             ) {
                 return $path;
             }
         }
-        
+
         #This is a bit horrible, no clone on Path::Tiny?
         return Path::Tiny::path( $inc_entry )->parent;
     }
@@ -101,7 +95,7 @@ has config => (
     is      => 'ro',
     isa     => 'HashRef',
     builder => 'setup_config',
-    lazy    => 1,
+    lazy    => 1, #inited by _setup_component
 );
 
 sub setup_config {
@@ -115,39 +109,32 @@ has controllers => (
     is      => 'ro',
     isa     => 'HashRef',
     builder => 'setup_controllers',
-    lazy    => 1,
+    lazy    => 1, #inited by setup_dispatch_table
 );
 
 has models => (
     is      => 'ro',
     isa     => 'HashRef',
     builder => 'setup_models',
-    lazy    => 1,
 );
 
 has views => (
     is      => 'ro',
     isa     => 'HashRef',
     builder => 'setup_views',
-    lazy    => 1,
 );
 
 sub setup_controllers {
-    my ( $self ) = @_;
-    $self->_setup_components("Controller");
+    $_[0]->_setup_component("Controller");
 }
-
 sub setup_models {
-    my ( $self ) = @_;
-    $self->_setup_components("Model");
+    $_[0]->_setup_component("Model");
 }
-
 sub setup_views {
-    my ( $self ) = @_;
-    $self->_setup_components("View");
+    $_[0]->_setup_component("View");
 }
 
-sub _setup_components {
+sub _setup_component {
     my ( $self, $type ) = @_;
     my $namespace = ref($self) . "::${type}";
 
@@ -156,7 +143,7 @@ sub _setup_components {
     my $components = {};
     foreach my $class ( @$classes ) {
         if( $class =~ m/${namespace}::(.*)$/ ) {
-            $components->{$1} = $class->new( 
+            $components->{$1} = $class->new(
                 app     => $self,
                 config  => $self->config->{"${type}::$1"} || {}
             );
@@ -165,10 +152,28 @@ sub _setup_components {
 
     $components;
 }
-
 #Quick access helpers
 sub model { $_[0]->models->{$_[1]}; }
 sub controller { $_[0]->controllers->{$_[1]}; }
 sub view { $_[0]->views->{$_[1]}; }
+
+has dispatcher => (
+    is      => 'ro',
+    builder => 'setup_dispatcher',
+);
+sub setup_dispatcher {
+    my $self = shift;
+
+    Potato::Dispatcher->new(
+        app => $self,
+    );
+}
+
+#this should be provided by the frontend, normalising the incoming to a uri
+sub dispatch {
+    my ( $self, $url ) = @_;
+
+    $self->dispatcher->dispatch( $url );
+};
 
 __PACKAGE__->meta->make_immutable;

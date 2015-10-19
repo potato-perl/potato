@@ -2,7 +2,7 @@
     "test": "some test config",
 
     "test_override": "Some NOT overridden config",
-    
+
     "Model::TestModel": {
         "model_test": "Some model test config",
     },
