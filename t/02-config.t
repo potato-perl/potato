@@ -1,13 +1,11 @@
 use strict;
 use warnings;
 use Test::More tests => 6;
-use FindBin ();
-
-my $ok;
-BEGIN { $ENV{HOME_PATH} = $FindBin::Bin . "/lib/App" };
 
 use FindBin qw/$Bin/;
 use lib "$Bin/lib";
+
+BEGIN { $ENV{HOME_PATH} = "$Bin/lib/App" };
 
 use App::DispatchTest;
 my $app = App::DispatchTest->new;
@@ -21,24 +19,24 @@ my $app = App::DispatchTest->new;
 
 #Model config
 {
-    is 
-        $app->model('TestModel')->config->{model_test}, 
-        "Some model test config", 
+    is
+        $app->model('TestModel')->config->{model_test},
+        "Some model test config",
         "Model config correctly setup.";
 }
 
 #Controller config
 {
-    is 
-        $app->controller('Root')->config->{controller_test}, 
-        "Some controller test config", 
+    is
+        $app->controller('Root')->config->{controller_test},
+        "Some controller test config",
         "Controller config correctly setup.";
 }
 
 #View config
 {
-    is 
-        $app->view('TestView')->config->{view_test}, 
-        "Some view test config", 
+    is
+        $app->view('TestView')->config->{view_test},
+        "Some view test config",
         "View config correctly setup.";
 }

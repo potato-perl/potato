@@ -7,5 +7,6 @@ requires 'Type::Tiny';
 requires 'Config::ZOMG';
 requires 'Path::Tiny';
 requires 'FindBin';
+requires 'List::Util';
 
 test_requires 'Test::More';

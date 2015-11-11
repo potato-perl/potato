@@ -10,16 +10,17 @@ has app => (
     weak_ref => 1,
 );
 
-has actions => (
-    is      => 'ro',
-    isa     => 'ArrayRef',
-    builder => 'setup_actions',
-);
-
 has config => (
     is          => 'ro',
     weak_ref    => 1,
     isa         => 'HashRef'
+);
+
+has actions => (
+    is      => 'ro',
+    isa     => 'ArrayRef',
+    builder => 'setup_actions',
+    lazy    => 1,
 );
 
 sub setup_actions {
@@ -28,12 +29,17 @@ sub setup_actions {
     my @actions;
 
     my @methods = $self->meta->get_method_with_attributes_list;
+    my $package_name = ref $self;
+    my $app_name = ref $self->app;
+    $package_name =~ s/${app_name}::Controller:://;
+
     for ( @methods ) {
         #should we store the meta method instead? ( $_ )???
         my $action = Potato::Action->new(
-            subname   => $_->name,
-            attrs     => $_->attributes,
-            classname => $_->package_name,
+            name        => $_->name,
+            attrs       => $_->attributes,
+            controller  => $package_name,
+            method      => $_,
         );
         push @actions, $action;
     }
