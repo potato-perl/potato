@@ -100,7 +100,12 @@ sub dispatch {
         next if !$matched;
 
         foreach my $matched ( @{$dispatch->{actions}} ) {
-            my @action_args = splice @args, 0, $matched->{args};
+            my @action_args;
+            if ( $matched->{args} == -1 ) {
+               @action_args = @args;
+            } else {
+                @action_args = splice @args, 0, $matched->{args};
+            }
 
             $matched->{action}->execute( @action_args );
         }

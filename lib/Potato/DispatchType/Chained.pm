@@ -83,7 +83,7 @@ sub parent_action_for {
     my ( $self, $action ) = @_;
 
     my $chained_to = $action->attrs->{Chained}->[0];
-    $self->action_for( lc $action->controller . "/$chained_to");
+    $self->action_for( lc $action->controller_name . "/$chained_to");
 }
 
 sub action_for {
