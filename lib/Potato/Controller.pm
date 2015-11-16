@@ -36,10 +36,11 @@ sub setup_actions {
     for ( @methods ) {
         #should we store the meta method instead? ( $_ )???
         my $action = Potato::Action->new(
-            name        => $_->name,
-            attrs       => $_->attributes,
-            controller  => $package_name,
-            method      => $_,
+            name                => $_->name,
+            attrs               => $_->attributes,
+            controller          => $self,
+            controller_name     => $package_name,
+            method              => $_,
         );
         push @actions, $action;
     }

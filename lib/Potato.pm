@@ -16,6 +16,8 @@ use List::Util ();
 our $VERSION = '0.001000';
 $VERSION = eval $VERSION;
 
+our  ( $request, $response, $stash );
+
 sub import {
     my $target = caller;
     my $class = shift;
@@ -134,10 +136,13 @@ sub setup_views {
     $_[0]->_setup_component("View");
 }
 
+sub stash { $stash }
+sub req { $request }
+sub res { $response }
+
 sub _setup_component {
     my ( $self, $type ) = @_;
     my $namespace = ref($self) . "::${type}";
-
     my $classes = Potato::Utensils::find_packages( $namespace );
 
     my $components = {};
@@ -171,9 +176,15 @@ sub setup_dispatcher {
 
 #this should be provided by the frontend, normalising the incoming to a uri
 sub dispatch {
-    my ( $self, $url ) = @_;
+    my ( $self, $url, $req, $res ) = @_;
+
+    local $stash = {};
+    local $request = $req;
+    local $response = $res;
 
     $self->dispatcher->dispatch( $url );
+
+    return $response;
 };
 
 __PACKAGE__->meta->make_immutable;

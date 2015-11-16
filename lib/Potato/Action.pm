@@ -32,6 +32,11 @@ has attrs => (
 
 has controller => (
     is  => 'ro',
+    weak_ref => 1,
+);
+
+has controller_name => (
+    is  => 'ro',
     isa => 'Str',
 );
 
@@ -48,7 +53,7 @@ has reverse_path => (
 sub build_reverse_path {
     my $self = shift;
 
-    my $controller = $self->controller;
+    my $controller = $self->controller_name;
     $controller =~ s/::/\\/g;
     lc $controller . '/' . $self->name;
 }
