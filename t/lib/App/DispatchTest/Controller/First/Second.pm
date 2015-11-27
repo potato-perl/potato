@@ -1,8 +1,7 @@
-package App::DispatchTest::Controller::Root;
+package App::DispatchTest::Controller::First::Second;
 use Potato::Controller;
-sub _namespace { '' }
 
-sub base : Chained(/) PathPart('') CaptureArgs(1) {
+sub base : Chained(/first/base) PathPart(second) CaptureArgs(1) {
     my ( $self, $arg ) = @_;
     $self->app->stash->{called}->{base} = $self->namespace . " Base Called";
     push(@{$self->app->stash->{args}}, $arg);

@@ -2,6 +2,8 @@ package Potato::Dispatcher;
 use Moose;
 
 use Potato::Utensils;
+use Text::SimpleTable;
+use List::Util ();
 
 has app => (
     is       => 'ro',
@@ -66,15 +68,41 @@ sub setup_dispatch_table {
         }
     }
 
+    if ( $ENV{POTATO_DEBUG} ) {
+        $self->_print_dispatch_table( \@matches );
+    }
+
     \@matches;
+}
+
+sub _print_dispatch_table {
+    my ( $self, $matches ) = @_;
+    my $dispatch_types = { map { $_->name => [] } @{$self->dispatch_types} };
+
+    #XXX todo make this ordered by priority
+    foreach ( @$matches ) {
+        my @reverse = map { $_->{action}->reverse_path . " (" . $_->{args} . ")" } @{$_->{actions}};
+        my $match = $_->{match};
+
+        push @{$dispatch_types->{ $_->{type} }}, [$match, join "\n => ", @reverse];
+    }
+
+    foreach ( keys %$dispatch_types ) {
+        next if !scalar $dispatch_types->{ $_ };
+
+        my $t1 = Text::SimpleTable->new([50, "Match"], [30, "Action"]);
+        foreach my $row ( @{$dispatch_types->{ $_ }} ) {
+            $t1->row( @$row );
+        }
+        print $t1->draw;
+    }
 }
 
 sub dispatch {
     my ( $self, $uri ) = @_;
 
-    #localise the request and response
-    foreach my $dispatch ( @{$self->dispatch_table} ) {
-        my $match = $dispatch->{match};
+    foreach my $dispatch_action ( @{$self->dispatch_table} ) {
+        my $match = $dispatch_action->{match};
         my $type = ref $match;
         my @args;
         my $matched;
@@ -87,7 +115,7 @@ sub dispatch {
             #if there are no args, it won't be a regexp
             if ( @args = ( $uri =~ $match ) ) {
                 #the last action has unlimted args
-                if ( $dispatch->{actions}->[-1]->{args} == -1 ) {
+                if ( $dispatch_action->{actions}->[-1]->{args} == -1 ) {
                     #pop off the last one and split it
                     my @last = split /\//, pop @args;
                     push @args, @last;
@@ -99,19 +127,27 @@ sub dispatch {
 
         next if !$matched;
 
-        foreach my $matched ( @{$dispatch->{actions}} ) {
+        foreach my $action ( @{$dispatch_action->{actions}} ) {
             my @action_args;
-            if ( $matched->{args} == -1 ) {
+            if ( $action->{args} == -1 ) {
                @action_args = @args;
             } else {
-                @action_args = splice @args, 0, $matched->{args};
+                @action_args = splice @args, 0, $action->{args};
             }
 
-            $matched->{action}->execute( @action_args );
+            $action->{action}->execute( @action_args );
         }
         return;
     }
+
+    die '404';
     #go to the default action
+}
+
+sub action_for {
+    my ( $self, $path ) = @_;
+
+    List::Util::first { $_->reverse_path eq $path } @{$self->actions };
 }
 
 __PACKAGE__->meta->make_immutable;
