@@ -8,14 +8,14 @@ use lib "$Bin/lib";
 use App::DispatchTest;
 my $app = App::DispatchTest->new;
 
-is scalar (keys %{$app->controllers}), 1, '1 controller';
+is scalar (keys %{$app->controllers}), 3, '3 controllers';
 is scalar @{$app->controllers->{'Root'}->actions}, 3, '3 actions';
 
 #Attributes
 {
-    my $attrs = $app->controllers->{'Root'}->actions->[2]->attrs;
-    is scalar(keys %{$attrs}), 3, "Action has 3 attributes";
-    is scalar(@{$attrs->{SomeAttr}}), 3, "Attribute has 3 values";
+    my $attributes = $app->controllers->{'Root'}->actions->[2]->attributes;
+    is scalar(keys %{$attributes}), 3, "Action has 3 attributes";
+    is scalar(@{$attributes->{SomeAttr}}), 3, "Attribute has 3 values";
 }
 
 #Models

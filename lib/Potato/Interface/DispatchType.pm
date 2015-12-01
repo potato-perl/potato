@@ -9,5 +9,6 @@ has dispatcher => (
 sub priority { 0 }
 
 requires 'register';
+requires 'name';
 
 1;

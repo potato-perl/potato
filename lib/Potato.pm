@@ -176,13 +176,13 @@ sub setup_dispatcher {
 
 #this should be provided by the frontend, normalising the incoming to a uri
 sub dispatch {
-    my ( $self, $url, $req, $res ) = @_;
+    my ( $self, $uri, $req, $res ) = @_;
 
     local $stash = {};
     local $request = $req;
     local $response = $res;
 
-    $self->dispatcher->dispatch( $url );
+    $self->dispatcher->dispatch( $uri );
 
     return $response;
 };

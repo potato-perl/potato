@@ -8,5 +8,7 @@ requires 'Config::ZOMG';
 requires 'Path::Tiny';
 requires 'FindBin';
 requires 'List::Util';
+requires 'String::CamelCase';
+requires 'Text::SimpleTable';
 
 test_requires 'Test::More';

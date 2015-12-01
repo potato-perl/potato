@@ -1,9 +1,9 @@
-use utf8;
 package Potato::Controller;
 use Moose;
 
 use Import::Into;
 use Potato::Action;
+use String::CamelCase qw//;
 
 has app => (
     is       => 'ro',
@@ -23,6 +23,23 @@ has actions => (
     lazy    => 1,
 );
 
+has namespace => (
+    is      => 'ro',
+    builder => '_namespace',
+);
+sub _namespace {
+    my $self = shift;
+
+    my $app_name = ref $self->app;
+
+    my $namespace = ref $self;
+    $namespace =~ s/${app_name}::Controller:://;
+    $namespace = String::CamelCase::decamelize( $namespace );
+    $namespace =~ s|::|/|;
+
+    return lc $namespace;
+}
+
 sub setup_actions {
     my $self = shift;
 
@@ -30,17 +47,15 @@ sub setup_actions {
 
     my @methods = $self->meta->get_method_with_attributes_list;
     my $package_name = ref $self;
-    my $app_name = ref $self->app;
-    $package_name =~ s/${app_name}::Controller:://;
 
     for ( @methods ) {
-        #should we store the meta method instead? ( $_ )???
+        #should we store the meta method instead? ( $_ ) [Class::MOP::Method] ???
         my $action = Potato::Action->new(
-            name                => $_->name,
-            attrs               => $_->attributes,
-            controller          => $self,
-            controller_name     => $package_name,
-            method              => $_,
+            name       => $_->name,
+            attributes => $_->attributes,
+            controller => $self,
+            namespace  => $self->namespace,
+            method     => $_,
         );
         push @actions, $action;
     }
