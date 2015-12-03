@@ -5,10 +5,10 @@ use Test::More tests => 6;
 use FindBin qw/$Bin/;
 use lib "$Bin/lib";
 
-BEGIN { $ENV{HOME_PATH} = "$Bin/lib/App" };
+BEGIN { $ENV{HOME_PATH} = "$Bin/lib/Test" };
 
-use App::DispatchTest;
-my $app = App::DispatchTest->new;
+use Test::Dispatch;
+my $app = Test::Dispatch->new;
 
 #Main app config
 {

@@ -5,8 +5,8 @@ use Test::More tests => 8;
 use FindBin qw/$Bin/;
 use lib "$Bin/lib";
 
-use App::DispatchTest;
-my $app = App::DispatchTest->new;
+use Test::Dispatch;
+my $app = Test::Dispatch->new;
 
 is scalar (keys %{$app->controllers}), 3, '3 controllers';
 is scalar @{$app->controllers->{'Root'}->actions}, 3, '3 actions';

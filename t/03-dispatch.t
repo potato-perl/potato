@@ -5,11 +5,11 @@ use Test::More tests => 6;
 use FindBin qw/$Bin/;
 use lib "$Bin/lib";
 
-use App::DispatchTest;
+use Test::Dispatch;
 use PotatoX::TestRequest;
 use PotatoX::TestResponse;
 
-my $app = App::DispatchTest->new;
+my $app = Test::Dispatch->new;
 
 #/*/elddim/*/*/end/**
 {
