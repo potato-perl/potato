@@ -1,4 +1,4 @@
-package App::DispatchTest::Controller::First;
+package Test::Dispatch::Controller::First;
 use Potato::Controller;
 
 sub base : Chained(/) PathPart('first') CaptureArgs(1) {

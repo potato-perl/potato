@@ -1,5 +1,5 @@
 use utf8;
-package App::DispatchTest::View::TestView;
+package Test::Dispatch::View::TestView;
 
 use Potato::View;
 

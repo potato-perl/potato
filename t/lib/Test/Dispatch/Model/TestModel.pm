@@ -1,5 +1,5 @@
 use utf8;
-package App::DispatchTest::Model::TestModel;
+package Test::Dispatch::Model::TestModel;
 
 use Potato::Model;
 
